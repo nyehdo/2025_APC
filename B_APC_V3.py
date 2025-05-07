@@ -1,6 +1,7 @@
 from datetime import date
 from tabulate import tabulate
 import pandas
+import math
 
 
 # Functions go here
@@ -11,7 +12,6 @@ def make_statement(statement, decoration):
     print(f"{decoration * 3} {statement} {decoration * 3}")
 
 
-# functions go here
 def string_check(question, valid_answers=('yes', 'no'),
                  num_letters=1, exit_code="xxx"):
     """checks that users enter the full word or the
@@ -76,8 +76,6 @@ def calculations(question):
     shape_list = ["square", "rectangle", "triangle", "circle"]
     function = ["area", "perimeter", "both"]
     unit_of_measurement = ["mm", "cm", "m", "km"]
-    area_answer = ""
-    perimeter_answer = ""
 
     all_shapes = []
     all_dimensions = []
@@ -92,11 +90,14 @@ def calculations(question):
 
     while True:
         measurements = ""
+        area_answer = "valid"
+        perimeter_answer = "valid"
+        results = ""
+
         print()
         # find out what shape the user wants to calculate
         shape_option = string_check("Choose a Shape: ", shape_list, 1)
         if shape_option == "xxx":
-            # end = "yes"
             break
 
         # find out what the user wants to calculate (area or perimeter or both)
@@ -111,14 +112,15 @@ def calculations(question):
             user_chose = f"You chose to calculate the area and perimeter of a " \
                          f"{shape_option} in {unit_of_measurement_option}"
         else:
-            user_chose = f"You chose to calculate the {function_option} of a {shape_option}" \
+            user_chose = f"You chose to calculate the {function_option} of a {shape_option} " \
                          f"in {unit_of_measurement_option}"
         print(user_chose)
+        print()
 
         # asking user measurements if they picked a square
         if shape_option == "square":
             length = int_check("Length: ")
-            measurements = f"Length : {length}{unit_of_measurement_option}"
+            measurements = f"Length : {length}"
             # finding area
             if function_option != "perimeter":
                 area_answer = length * length
@@ -130,9 +132,8 @@ def calculations(question):
         elif shape_option == "rectangle":
             length = int_check("Length: ")
             width = int_check("Width: ")
-            measurements = f"Length : {length}{unit_of_measurement_option} | " \
-                           f"Width : {width}{unit_of_measurement_option}" \
-                # finding area
+            measurements = f"Length : {length} | Width : {width}"
+            # finding area
             if function_option != "perimeter":
                 area_answer = length * width
             # finding perimeter
@@ -141,52 +142,79 @@ def calculations(question):
 
         # asking user measurements if they picked a triangle
         elif shape_option == "triangle":
-            # finding area
-            if function_option != "perimeter":
-                base = int_check("Base: ")
-                height = int_check("Height: ")
-                measurements = f"Base : {base}{unit_of_measurement_option} | " \
-                               f"Height : {height}{unit_of_measurement_option}"
-                area_answer = base * height / 2
-            # finding perimeter
-            if function_option != "area":
+            side_check = string_check("Do you have all sides of the triangle? ")
+            if side_check == "yes":
                 s1 = int_check("Side 1: ")
                 s2 = int_check("Side 2: ")
                 s3 = int_check("Side 3: ")
-                # checking to make sure this is a triangle
                 if s1 + s2 < s3 or s2 + s3 < s1 or s3 + s1 < s2:
                     perimeter_answer = "invalid"
+                    area_answer = "invalid"
                 else:
-                    perimeter_answer = s1 + s2 + s3
-                    measurements = f"S1 : {s1}{unit_of_measurement_option} | " \
-                                   f"S2 : {s2}{unit_of_measurement_option} | " \
-                                   f"S3 : {s3}{unit_of_measurement_option}"
+                    # finding area
+                    if function_option != "perimeter":
+                        s = (s1 + s2 + s3) / 2
+                        area_answer = math.sqrt(s * (s - s1) * (s - s2) * (s - s3))
+                    # finding perimeter
+                    if function_option != "area":
+                        perimeter_answer = s1 + s2 + s3
+                    measurements = f"S1 : {s1} | S2 : {s2} | S3 : {s3}"
+            elif function_option == "perimeter":
+                perimeter_answer = "invalid"
+            else:
+                base_height_check = string_check("Do you have the base and the height of the triangle? ")
+                if base_height_check == "yes":
+                    if shape_option != "perimeter":
+                        base = int_check("Base: ")
+                        height = int_check("Height: ")
+                        measurements = f"Base : {base} | Height : {height}"
+                        area_answer = base * height / 2
+                    if shape_option != "area":
+                        perimeter_answer = "invalid"
+                else:
+                    area_answer = "invalid"
+                    perimeter_answer = "invalid"
         # asking user for measurements if they picked a circle
         else:
             radius = int_check("Radius: ")
-            measurements = f"Radius : {radius}{unit_of_measurement_option}"
+            measurements = f"Radius : {radius}"
             # finding area
             if function_option != "perimeter":
-                area_answer = (radius ** 2) * 3.14
+                area_answer = (radius ** 2) * math.pi
             # finding perimeter
             if function_option != "area":
-                perimeter_answer = radius * 6.28
+                perimeter_answer = radius * math.pi * 2
 
-        # letting user know that this is an invalid triangle
-        if perimeter_answer == "invalid":
-            print(f"This is not a triangle")
-            continue
-
-        # print perimeter answer for user
+        # results if the user chose to calculate both
+        if function_option == "both":
+            # results when both answer cannot be found
+            if area_answer == "invalid" and perimeter_answer == "invalid":
+                results = f"The area cannot be found | " \
+                          f"The perimeter cannot be found"
+            # results if only perimeter can be found
+            elif area_answer == "invalid":
+                results = f"The area cannot be found | " \
+                          f"The perimeter = {perimeter_answer:.2f}{unit_of_measurement_option}"
+            # results if only area can be found
+            elif perimeter_answer == "invalid":
+                results = f"The area = {area_answer:.2f}{unit_of_measurement_option} | " \
+                          f"The perimeter cannot be found"
+            # results if both are found
+            else:
+                results = f"The area = {area_answer:.2f}{unit_of_measurement_option}^2 | " \
+                          f"The perimeter = {perimeter_answer:.2f}{unit_of_measurement_option}"
+        # results if user chose area
+        if function_option == "area":
+            if area_answer == "invalid":
+                results = f"The area cannot be found"
+            else:
+                results = f" The area = {area_answer:.2f}{unit_of_measurement_option}^2"
+        # results if user chose perimeter
         if function_option == "perimeter":
-            results = f"The perimeter = {perimeter_answer}{unit_of_measurement_option}"
-
-        # print area answer for user
-        elif function_option == "area":
-            results = f"The area = {area_answer}{unit_of_measurement_option}^2"
-        else:
-            results = f"The perimeter = {perimeter_answer}{unit_of_measurement_option}" \
-                      f" | The area = {area_answer}{unit_of_measurement_option}^2"
+            if perimeter_answer == "invalid":
+                results = f"The perimeter cannot be found"
+            else:
+                results = f" The perimeter = {perimeter_answer:.2f}{unit_of_measurement_option}"
 
         # appending shape and measurements to data
         all_shapes.append(shape_option)
@@ -210,7 +238,7 @@ want_instructions = string_check("Do you want to see instructions? ")
 if want_instructions == "yes":
     instructions()
 
-get_calculations = calculations("Start")
+get_calculations = calculations("")
 print(get_calculations)
 
 # *** get current date for heading and filename***
@@ -238,3 +266,4 @@ text_file = open(write_to, "w+")
 for item in to_write:
     text_file.write(item)
     text_file.write("\n")
+ 
