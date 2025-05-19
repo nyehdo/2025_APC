@@ -9,7 +9,7 @@ def make_statement(statement, decoration):
     """Emphasises headings by adding decoration
     at the start and end"""
 
-    print(f"{decoration * 3} {statement} {decoration * 3}")
+    return f"{decoration * 3} {statement} {decoration * 3}"
 
 
 def string_check(question, valid_answers=('yes', 'no'),
@@ -63,12 +63,12 @@ def instructions():
 
     print('''
 
-Choose a shape (e.g. square / rectangle / triangle / circle)
-Then choose whether you would like to calculate the area, perimeter or both.
-After pick which unit of measurement you would like to use (e.g. mm / cm / m / km).
+Choose a shape (square / rectangle / triangle / circle)
+and what unit of measurement you would like to use (mm / cm / m / km).
 
-Based on your options, the system will ask for the dimensions required.
+The program will ask for the dimensions required and then provide you with an answer.
 The system will loop until you enter the exit code ('xxx') and then output calculator history.
+The calculator's history will be save directly into a text file.
 ''')
 
 
@@ -90,7 +90,8 @@ def calculations():
         "Area": all_area,
         "Perimeter": all_perimeter
     }
-
+    
+    # loop
     while True:
         measurements = ""
 
@@ -183,10 +184,13 @@ def calculations():
     return variable
 
 
+# title
 make_statement("Area Perimeter Calculator", "🔢")
 
 # main routine goes here
 print()
+
+# asking user if they want instructions
 want_instructions = string_check("Do you want to see instructions? ")
 
 if want_instructions == "yes":
@@ -205,14 +209,15 @@ month = today.strftime("%m")
 year = today.strftime("%y")
 
 # heading for file
-main_heading_string = f"Area Perimeter Calculator"
+main_heading_string = make_statement(f"Area Perimeter Calculator "
+                                     f"({day}/{month}/{year})", "=")
 
 # write to file
 to_write = [main_heading_string, "\n",
             get_calculations]
 
 # create file to hold data (add .txt extension)
-file_name = f"{main_heading_string}_{year}_{month}_{day}"
+file_name = f"Area Perimeter Calculator_{year}_{month}_{day}"
 write_to = "{}.txt".format(file_name)
 
 text_file = open(write_to, "w+")
